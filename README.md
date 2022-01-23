@@ -8,5 +8,5 @@
 
 ### *python .\CommandLineUtility.py --dl_No DL-0420110149646 --dob 09-02-1976 --find res
 
-### *The ScrapperUsingXpath.py scraps the contents of the website using xpath and lxml. Just run the file independently to scrap the details according to the given xml.
+### *The ScrapperUsingXpath.py scraps the contents of the website using xpath and lxml. Just run the file independently to scrap the details according to the given xpath.
 
