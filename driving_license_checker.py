@@ -1,12 +1,14 @@
 import requests
 from bs4 import BeautifulSoup
 import logging
-import re
+from PIL import Image
+from io import BytesIO
 
 # Set up logging for better debugging and monitoring
 logging.basicConfig(level=logging.INFO)
 
 class LicenseStatusChecker:
+
     def __init__(self, dl_No, dob):
         """
         Initialize the checker with the driver's license number and date of birth.
@@ -25,17 +27,49 @@ class LicenseStatusChecker:
         try:
             with requests.Session() as session:
                 response = session.get(self.url, headers=self.headers)
-                response.raise_for_status()  # Make sure the request was successful
+                response.raise_for_status()  # Ensure the request was successful
                 soup = BeautifulSoup(response.content, 'html5lib')
+
+                # Extract CAPTCHA image source
+                captcha_img_tag = soup.find('img', {'id': 'form_rcdl:j_idt33:j_idt39'})
+                captcha_img_url = captcha_img_tag.get('src')
+
+                # Full CAPTCHA URL (website base URL + CAPTCHA path)
+                captcha_img_url = "https://parivahan.gov.in" + captcha_img_url
+                logging.info(f"Captcha image URL: {captcha_img_url}")
+
+                # Download the CAPTCHA image
+                captcha_image = self.download_captcha_image(session, captcha_img_url)
+
+                # Display the CAPTCHA image for manual solving
+                captcha_image.show()
+
+                # The CAPTCHA image is now fetched, and you can manually solve it
+                captcha_text = input("Enter the CAPTCHA text: ")
 
                 # Extract necessary hidden fields from the page
                 form_data = {
                     'form_rcdl:tf_dlNO': soup.find('input', attrs={'name': "form_rcdl:tf_dlNO"}).get('value', ''),
-                    'form_rcdl:tf_dob_input': soup.find('input', attrs={'name': 'form_rcdl:tf_dob_input'}).get('value', '')
+                    'form_rcdl:tf_dob_input': soup.find('input', attrs={'name': 'form_rcdl:tf_dob_input'}).get('value', ''),
+                    'form_rcdl:j_idt33:CaptchaID': captcha_text
                 }
+
                 return form_data
         except requests.exceptions.RequestException as e:
             logging.error(f"Error fetching form data: {e}")
+            return None
+
+    def download_captcha_image(self, session, captcha_img_url):
+        """
+        Download the CAPTCHA image.
+        """
+        try:
+            response = session.get(captcha_img_url)
+            response.raise_for_status()
+            img = Image.open(BytesIO(response.content))
+            return img
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Error downloading CAPTCHA image: {e}")
             return None
 
     def submit_form(self, form_data):
@@ -60,24 +94,21 @@ class LicenseStatusChecker:
         if form_data is None:
             return "Error fetching form data from the website."
 
-        # Update the form data with the user's DL number and DOB
         form_data['form_rcdl:tf_dlNO'] = self.dl_No
         form_data['form_rcdl:tf_dob_input'] = self.dob
-
-        # Submit the form and return the result
         result = self.submit_form(form_data)
         if result is None:
             return "Error submitting the form."
         
-        # Return the response content (the status page)
         return result
 
 
 # Example usage
 if __name__ == '__main__':
-    dl_No = 'DL-0420110149646' 
-    dob = '09-02-1976'  
 
+    dl_No = 'DL-0420110149646' 
+    dob = '09-02-1976' 
+    
     checker = LicenseStatusChecker(dl_No=dl_No, dob=dob)
 
     result = checker.check_license_status()
