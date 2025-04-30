@@ -1,10 +1,23 @@
-# Web Scrapper Tool
+# License Status Checker
 
-The `PostRequest.py` helps to post a request at `https://parivahan.gov.in/rcdlstatus/?pur_cd=101` with given DL Number and DOB. Run it using python idle. But it also needs a captcha, so for now, it only brings all the contents of the Parivahan website after a post request. 
+## Overview
+The **License Status Checker** is a Python script that allows users to check the status of their driver's license using the official Indian government website (Parivahan). The script scrapes the necessary data from the website, handles CAPTCHA solving, and submits the form with user details to retrieve the status of the driver's license.
 
-The `CommandLineUtility.py` does the same post request thing using command line. This runs on command line using:
-```python
-python .\CommandLineUtility.py --dl_No DL-0420110149646 --dob 09-02-1976 --find res
-```
+## Features
+- Fetches the necessary hidden form fields from the Parivahan website.
+- Downloads the CAPTCHA image and allows the user to manually solve it.
+- Submits the form with the driver's license number and date of birth.
+- Displays the results of the license status check.
 
-The `ScrapperUsingXpath.py` scraps the contents of the website using xpath and lxml. Just run the file independently to scrap the details according to the given xpath.
+## Requirements
+Before running the script, ensure that you have the following Python libraries installed:
+
+- `requests` - For making HTTP requests.
+- `BeautifulSoup` - For parsing and extracting data from HTML.
+- `logging` - For logging and debugging.
+- `PIL` (Pillow) - For handling and displaying CAPTCHA images.
+
+You can install the required libraries using `pip`:
+
+```bash
+pip install requests beautifulsoup4 Pillow
